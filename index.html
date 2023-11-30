@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dijkstra's Algorithm Table</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 50%;
+      margin: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid black;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Dijkstra's Algorithm Table</h2>
+
+<table id="dijkstraTable">
+  <!-- The table will be generated dynamically using JavaScript -->
+</table>
+
+<script>
+  // Sample graph representation
+  const graph = {
+    A: { B: 1, C: 4 },
+    B: { A: 1, C: 2, D: 5 },
+    C: { A: 4, B: 2, D: 1 },
+    D: { B: 5, C: 1 }
+  };
+
+  // Dijkstra's algorithm implementation
+  function dijkstra(graph, start) {
+    const distance = {};
+    const visited = {};
+    const table = [];
+
+    for (const node in graph) {
+      distance[node] = Infinity;
+      visited[node] = false;
+    }
+
+    distance[start] = 0;
+
+    while (true) {
+      let current = null;
+
+      for (const node in graph) {
+        if (!visited[node] && (current === null || distance[node] < distance[current])) {
+          current = node;
+        }
+      }
+
+      if (current === null) break;
+
+      visited[current] = true;
+
+      for (const neighbor in graph[current]) {
+        const newDistance = distance[current] + graph[current][neighbor];
+
+        if (newDistance < distance[neighbor]) {
+          distance[neighbor] = newDistance;
+        }
+      }
+
+      // Build the table row for this step
+      const row = Object.keys(distance).map(node => `<td>${node}: ${distance[node] === Infinity ? '∞' : distance[node]}</td>`);
+      table.push(`<tr><td>${current}</td>${row.join('')}</tr>`);
+    }
+
+    return table;
+  }
+
+  // Display the table
+  const startNode = 'A';
+  const resultTable = dijkstra(graph, startNode);
+
+  const tableElement = document.getElementById('dijkstraTable');
+  tableElement.innerHTML = `<tr><th>Step</th>${Object.keys(graph).map(node => `<th>${node}</th>`).join('')}</tr>${resultTable.join('')}`;
+</script>
+
+</body>
+</html>
