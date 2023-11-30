@@ -19,11 +19,22 @@
       padding: 10px;
       text-align: center;
     }
+
+    textarea {
+      margin: 10px;
+      width: 80%;
+      height: 100px;
+    }
   </style>
 </head>
 <body>
 
 <h2>Dijkstra's Algorithm Tables</h2>
+
+<label for="graphInput">Enter Graph Data:</label>
+<textarea id="graphInput" placeholder="1 2 1&#13;1 3 4&#13;2 3 2&#13;2 4 5&#13;3 4 1"></textarea>
+
+<button onclick="updateGraph()">Update Graph</button>
 
 <table id="distanceTable">
   <!-- The table for distances will be generated dynamically using JavaScript -->
@@ -34,13 +45,25 @@
 </table>
 
 <script>
-  // Sample graph representation
-  const graph = {
-    1: { 2: 1, 3: 4 },
-    2: { 1: 1, 3: 2, 4: 5 },
-    3: { 1: 4, 2: 2, 4: 1 },
-    4: { 2: 5, 3: 1 }
-  };
+  let graph = {};
+
+  function updateGraph() {
+    const inputText = document.getElementById('graphInput').value;
+
+    // Reset the graph
+    graph = {};
+
+    // Parse the input and update the graph
+    const lines = inputText.split('\n');
+    lines.forEach(line => {
+      const [start, end, weight] = line.split(' ').map(Number);
+      if (!graph[start]) graph[start] = {};
+      graph[start][end] = weight;
+    });
+
+    // Display the updated tables
+    displayTables();
+  }
 
   // Dijkstra's algorithm implementation
   function dijkstra(graph, start) {
@@ -93,14 +116,19 @@
   }
 
   // Display the tables
-  const startNode = 1;
-  const { distanceTable, predecessorTable } = dijkstra(graph, startNode);
+  function displayTables() {
+    const startNode = Object.keys(graph)[0] || 1; // Use the first node as the start if available
+    const { distanceTable, predecessorTable } = dijkstra(graph, startNode);
 
-  const distanceTableElement = document.getElementById('distanceTable');
-  distanceTableElement.innerHTML = `<tr><th>Step</th>${Object.keys(graph).map(node => `<th>Dist(${node})</th>`).join('')}</tr>${distanceTable.join('')}`;
+    const distanceTableElement = document.getElementById('distanceTable');
+    distanceTableElement.innerHTML = `<tr><th>Step</th>${Object.keys(graph).map(node => `<th>Dist(${node})</th>`).join('')}</tr>${distanceTable.join('')}`;
 
-  const predecessorTableElement = document.getElementById('predecessorTable');
-  predecessorTableElement.innerHTML = `<tr><th>Step</th>${Object.keys(graph).map(node => `<th>Pred(${node})</th>`).join('')}</tr>${predecessorTable.join('')}`;
+    const predecessorTableElement = document.getElementById('predecessorTable');
+    predecessorTableElement.innerHTML = `<tr><th>Step</th>${Object.keys(graph).map(node => `<th>Pred(${node})</th>`).join('')}</tr>${predecessorTable.join('')}`;
+  }
+
+  // Initial display
+  displayTables();
 </script>
 
 </body>
