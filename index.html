@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dijkstra's Algorithm Table</title>
+  <title>Dijkstra's Algorithm Tables</title>
   <style>
     table {
       border-collapse: collapse;
-      width: 60%;
+      width: 40%;
       margin: 20px;
     }
 
@@ -23,10 +23,14 @@
 </head>
 <body>
 
-<h2>Dijkstra's Algorithm Table</h2>
+<h2>Dijkstra's Algorithm Tables</h2>
 
-<table id="dijkstraTable">
-  <!-- The table will be generated dynamically using JavaScript -->
+<table id="distanceTable">
+  <!-- The table for distances will be generated dynamically using JavaScript -->
+</table>
+
+<table id="predecessorTable">
+  <!-- The table for predecessors will be generated dynamically using JavaScript -->
 </table>
 
 <script>
@@ -43,7 +47,8 @@
     const distance = {};
     const predecessor = {};
     const visited = {};
-    const table = [];
+    const distanceTable = [];
+    const predecessorTable = [];
 
     for (const node in graph) {
       distance[node] = Infinity;
@@ -75,21 +80,27 @@
         }
       }
 
-      // Build the table row for this step
-      const row = Object.keys(graph).map(node => `<td>${distance[node] === Infinity ? '∞' : distance[node]}</td>`);
+      // Build the distance table row for this step
+      const distanceRow = Object.keys(graph).map(node => `<td>${distance[node] === Infinity ? '∞' : distance[node]}</td>`);
+      distanceTable.push(`<tr><td>${current}</td>${distanceRow.join('')}</tr>`);
+
+      // Build the predecessor table row for this step
       const predecessorRow = Object.keys(graph).map(node => `<td>${predecessor[node] === null ? '-' : predecessor[node]}</td>`);
-      table.push(`<tr><td>${current}</td>${row.join('')}${predecessorRow.join('')}</tr>`);
+      predecessorTable.push(`<tr><td>${current}</td>${predecessorRow.join('')}</tr>`);
     }
 
-    return table;
+    return { distanceTable, predecessorTable };
   }
 
-  // Display the table
+  // Display the tables
   const startNode = 1;
-  const resultTable = dijkstra(graph, startNode);
+  const { distanceTable, predecessorTable } = dijkstra(graph, startNode);
 
-  const tableElement = document.getElementById('dijkstraTable');
-  tableElement.innerHTML = `<tr><th>Step</th>${Object.keys(graph).map(node => `<th>Dist(${node})</th>`).join('')}${Object.keys(graph).map(node => `<th>Pred(${node})</th>`).join('')}</tr>${resultTable.join('')}`;
+  const distanceTableElement = document.getElementById('distanceTable');
+  distanceTableElement.innerHTML = `<tr><th>Step</th>${Object.keys(graph).map(node => `<th>Dist(${node})</th>`).join('')}</tr>${distanceTable.join('')}`;
+
+  const predecessorTableElement = document.getElementById('predecessorTable');
+  predecessorTableElement.innerHTML = `<tr><th>Step</th>${Object.keys(graph).map(node => `<th>Pred(${node})</th>`).join('')}</tr>${predecessorTable.join('')}`;
 </script>
 
 </body>
