@@ -25,6 +25,10 @@
       width: 80%;
       height: 100px;
     }
+
+    input[type="text"] {
+      margin: 10px;
+    }
   </style>
 </head>
 <body>
@@ -34,21 +38,32 @@
 <label for="graphInput">Enter Graph Data:</label>
 <textarea id="graphInput" placeholder="1 2 1&#13;1 3 4&#13;2 3 2&#13;2 4 5&#13;3 4 1"></textarea>
 
+<br>
+
+<label for="startNode">Enter Starting Node:</label>
+<input type="text" id="startNode" placeholder="Enter starting node" value="1">
+
+<label for="isDirected">Directed Graph:</label>
+<input type="checkbox" id="isDirected" checked>
+
 <button onclick="updateGraph()">Update Graph</button>
 
-<table id="distanceTable">
-  <!-- The table for distances will be generated dynamically using JavaScript -->
-</table>
 
-<table id="predecessorTable">
-  <!-- The table for predecessors will be generated dynamically using JavaScript -->
-</table>
+<table id="distanceTable">
+    <!-- The table for distances will be generated dynamically using JavaScript -->
+  </table>
+  
+  <table id="predecessorTable">
+    <!-- The table for predecessors will be generated dynamically using JavaScript -->
+  </table>
 
 <script>
   let graph = {};
 
   function updateGraph() {
     const inputText = document.getElementById('graphInput').value;
+    const startNode = document.getElementById('startNode').value;
+    const isDirected = document.getElementById('isDirected').checked;
 
     // Reset the graph
     graph = {};
@@ -58,66 +73,72 @@
     lines.forEach(line => {
       const [start, end, weight] = line.split(' ').map(Number);
       if (!graph[start]) graph[start] = {};
+      if (!graph[end]) graph[end] = {};
+
       graph[start][end] = weight;
+
+      if (!isDirected) {
+        // If the graph is not directed, add the reverse edge
+        graph[end][start] = weight;
+      }
     });
 
     // Display the updated tables
-    displayTables();
+    displayTables(startNode);
   }
 
-  // Dijkstra's algorithm implementation
   function dijkstra(graph, start) {
-    const distance = {};
+    const dist = {};
     const predecessor = {};
     const visited = {};
     const distanceTable = [];
     const predecessorTable = [];
+    const Q = new Set();
 
-    for (const node in graph) {
-      distance[node] = Infinity;
-      predecessor[node] = null;
-      visited[node] = false;
+    // Initialization according to the pseudocode
+    for (const vertex in graph) {
+      dist[vertex] = vertex === start ? 0 : Infinity;
+      predecessor[vertex] = vertex === start ? start : null;
+      visited[vertex] = false;
+      Q.add(vertex);
     }
 
-    distance[start] = 0;
+    while (Q.size > 0) {
+      let v = null;
 
-    for (let i = 0; i < Object.keys(graph).length; i++) {
-      let current = null;
-
-      for (const node in graph) {
-        if (!visited[node] && (current === null || distance[node] < distance[current])) {
-          current = node;
+      // Find the vertex in Q with the minimum dist value
+      Q.forEach(node => {
+        if (v === null || dist[node] < dist[v]) {
+          v = node;
         }
-      }
+      });
 
-      if (current === null) break;
+      Q.delete(v);
 
-      visited[current] = true;
+      for (const u in graph[v]) {
+        const alt = dist[v] + graph[v][u];
 
-      for (const neighbor in graph[current]) {
-        const newDistance = distance[current] + graph[current][neighbor];
-
-        if (newDistance < distance[neighbor]) {
-          distance[neighbor] = newDistance;
-          predecessor[neighbor] = current;
+        if (alt < dist[u]) {
+          dist[u] = alt;
+          predecessor[u] = v;
         }
       }
 
       // Build the distance table row for this step
-      const distanceRow = Object.keys(graph).map(node => `<td>${distance[node] === Infinity ? '∞' : distance[node]}</td>`);
-      distanceTable.push(`<tr><td>${current}</td>${distanceRow.join('')}</tr>`);
+      const distanceRow = Object.keys(graph).map(node => `<td>${dist[node] === Infinity ? '∞' : dist[node]}</td>`);
+      distanceTable.push(`<tr><td>${v}</td>${distanceRow.join('')}</tr>`);
 
       // Build the predecessor table row for this step
       const predecessorRow = Object.keys(graph).map(node => `<td>${predecessor[node] === null ? '-' : predecessor[node]}</td>`);
-      predecessorTable.push(`<tr><td>${current}</td>${predecessorRow.join('')}</tr>`);
+      predecessorTable.push(`<tr><td>${v}</td>${predecessorRow.join('')}</tr>`);
     }
 
     return { distanceTable, predecessorTable };
   }
 
   // Display the tables
-  function displayTables() {
-    const startNode = Object.keys(graph)[0] || 1; // Use the first node as the start if available
+  function displayTables(startNode) {
+    startNode = startNode || Object.keys(graph)[0]; // Use the first node as the start if not provided
     const { distanceTable, predecessorTable } = dijkstra(graph, startNode);
 
     const distanceTableElement = document.getElementById('distanceTable');
@@ -129,6 +150,13 @@
 
   // Initial display
   displayTables();
+
+  // Listen for Ctrl + Enter to trigger the updateGraph function
+  document.addEventListener('keydown', function (event) {
+    if (event.ctrlKey && event.key === 'Enter') {
+      updateGraph();
+    }
+  });
 </script>
 
 </body>
