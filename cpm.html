@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dijkstra's Algorithm Tables</title>
+  <title>Critical path method</title>
   <style>
     table {
       border-collapse: collapse;
@@ -33,7 +33,8 @@
 </head>
 <body>
 
-<h2>Dijkstra's Algorithm Tables</h2>
+<h2>Critical path</h2>
+<p>Modified Dijkstra algorithm was used.</p>
 
 <label for="graphInput">Enter Graph Data:</label>
 <textarea id="graphInput" placeholder="source destination weight&#13;1 2 1&#13;1 3 4&#13;2 3 2&#13;2 4 5&#13;3 4 1"></textarea>
@@ -87,7 +88,7 @@
     displayTables(startNode);
   }
 
-  function dijkstra(graph, start) {
+  function cpm(graph, start) {
     const dist = {};
     const predecessor = {};
     const visited = {};
@@ -97,7 +98,7 @@
 
     // Initialization according to the pseudocode
     for (const vertex in graph) {
-      dist[vertex] = vertex === start ? 0 : Infinity;
+      dist[vertex] = 0;
       predecessor[vertex] = vertex === start ? start : null;
       visited[vertex] = false;
       Q.add(vertex);
@@ -118,9 +119,10 @@
       for (const u in graph[v]) {
         const alt = dist[v] + graph[v][u];
 
-        if (alt < dist[u]) {
+        if (alt > dist[u]) { //differs from dijkstra
           dist[u] = alt;
           predecessor[u] = v;
+          Q.add(u); // !!! very important
         }
       }
 
@@ -139,7 +141,7 @@
   // Display the tables
   function displayTables(startNode) {
     startNode = startNode || Object.keys(graph)[0]; // Use the first node as the start if not provided
-    const { distanceTable, predecessorTable } = dijkstra(graph, startNode);
+    const { distanceTable, predecessorTable } = cpm(graph, startNode);
 
     const distanceTableElement = document.getElementById('distanceTable');
     distanceTableElement.innerHTML = `<tr><th>Step</th>${Object.keys(graph).map(node => `<th>Dist(${node})</th>`).join('')}</tr>${distanceTable.join('')}`;
@@ -161,7 +163,7 @@
 
 <br>
 <p>Similar tools:</p>
-<a href="cpm.html">Find critical path</a>
+<a href="index.html">Find shortest path</a>
 
 </body>
 </html>
